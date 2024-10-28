@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tirar Foto com a Câmera do Celular</title>
+</head>
+<body>
+    <h1>Tire uma Foto</h1>
+    <form>
+        <label for="foto">Clique abaixo para tirar uma foto:</label>
+        <input type="file" id="foto" accept="image/*" capture="environment" onchange="exibirFoto(event)">
+        <br><br>
+        <img id="preview" alt="Pré-visualização da Foto" style="max-width: 100%; height: auto;">
+    </form>
+
+    <script>
+        function exibirFoto(event) {
+            const foto = event.target.files[0];
+            if (foto) {
+                const preview = document.getElementById('preview');
+                preview.src = URL.createObjectURL(foto);
+                preview.onload = () => URL.revokeObjectURL(preview.src); // Libera a memória
+            }
+        }
+    </script>
+</body>
+</html>
