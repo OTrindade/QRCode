@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Upload de Imagem</title>
+  <title>Leitura de QR Code</title>
   <!-- CDN do React e ReactDOM -->
   <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <!-- CDN da biblioteca jsQR -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <!-- Importando o arquivo de CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
@@ -16,22 +18,67 @@
 
   <script type="text/babel">
     const ImageUpload = () => {
-      const [selectedImage, setSelectedImage] = React.useState(null);
+      const [selectedImages, setSelectedImages] = React.useState([]);
 
-      const handleImageUpload = (event) => {
-        const file = event.target.files[0];
-        setSelectedImage(URL.createObjectURL(file));
+      const handleImageUpload = async (event) => {
+        const files = Array.from(event.target.files);
+        const newImages = await Promise.all(files.map(async (file) => {
+          const imageData = await readImageFile(file);
+          const qrCodeText = await decodeQRCode(imageData);
+          return {
+            id: URL.createObjectURL(file),
+            file,
+            qrCodeText: qrCodeText || 'QR code não encontrado'
+          };
+        }));
+        setSelectedImages(prevImages => [...prevImages, ...newImages]);
+      };
+
+      // Função para converter o arquivo de imagem em dados de imagem
+      const readImageFile = (file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, img.width, img.height);
+              resolve(ctx.getImageData(0, 0, img.width, img.height));
+            };
+          };
+          reader.readAsDataURL(file);
+        });
+      };
+
+      // Função para decodificar o QR code usando jsQR
+      const decodeQRCode = (imageData) => {
+        const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+        return qrCode ? qrCode.data : null;
+      };
+
+      const handleRemoveImage = (id) => {
+        setSelectedImages(prevImages => prevImages.filter(image => image.id !== id));
       };
 
       return (
         <div className="container">
-          <h2>Upload de Imagem</h2>
-          <input type="file" accept="image/*" onChange={handleImageUpload} />
-          {selectedImage && (
-            <div className="image-preview">
-              <img src={selectedImage} alt="Preview" style={{ width: '200px', height: '200px', marginTop: '20px', borderRadius: '10px' }} />
-            </div>
-          )}
+          <h2>Upload de QR Code</h2>
+          <input type="file" accept="image/*" multiple onChange={handleImageUpload} />
+          <div className="image-preview-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+            {selectedImages.map((image) => (
+              <div key={image.id} style={{ display: 'flex', alignItems: 'center', border: '1px solid #ccc', padding: '10px', borderRadius: '10px' }}>
+                <img src={image.id} alt="Preview" style={{ width: '200px', height: '200px', borderRadius: '10px' }} />
+                <div style={{ marginLeft: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <p>{image.qrCodeText}</p>
+                  <button onClick={() => handleRemoveImage(image.id)} style={{ marginTop: '10px' }}>Remover</button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       );
     };
