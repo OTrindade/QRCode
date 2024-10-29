@@ -1,60 +1,42 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tirar Foto com a Câmera do Celular</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload de Imagem</title>
+  <!-- CDN do React e ReactDOM -->
+  <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <!-- Importando o arquivo de CSS -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Tire uma Foto</h1>
-    <form>
-        <label for="foto">Clique abaixo para tirar uma foto:</label>
-        <input type="file" id="foto" accept="image/*" capture="environment" onchange="redimensionarEExibirFoto(event)">
-        <br><br>
-        <img id="preview" alt="Pré-visualização da Foto" style="max-width: 100%; height: auto;">
-    </form>
+  <div id="root"></div>
 
-    <script>
-        function redimensionarEExibirFoto(event) {
-            const foto = event.target.files[0];
-            if (foto) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        
-                        // Definindo a nova largura e altura da imagem
-                        const maxWidth = 800; // Largura máxima desejada
-                        const maxHeight = 600; // Altura máxima desejada
-                        let width = img.width;
-                        let height = img.height;
+  <script type="text/babel">
+    const ImageUpload = () => {
+      const [selectedImage, setSelectedImage] = React.useState(null);
 
-                        if (width > height) {
-                            if (width > maxWidth) {
-                                height *= maxWidth / width;
-                                width = maxWidth;
-                            }
-                        } else {
-                            if (height > maxHeight) {
-                                width *= maxHeight / height;
-                                height = maxHeight;
-                            }
-                        }
+      const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        setSelectedImage(URL.createObjectURL(file));
+      };
 
-                        canvas.width = width;
-                        canvas.height = height;
-                        ctx.drawImage(img, 0, 0, width, height);
+      return (
+        <div className="container">
+          <h2>Upload de Imagem</h2>
+          <input type="file" accept="image/*" onChange={handleImageUpload} />
+          {selectedImage && (
+            <div className="image-preview">
+              <img src={selectedImage} alt="Preview" style={{ width: '200px', height: '200px', marginTop: '20px', borderRadius: '10px' }} />
+            </div>
+          )}
+        </div>
+      );
+    };
 
-                        const preview = document.getElementById('preview');
-                        preview.src = canvas.toDataURL('image/jpeg', 0.7); // Reduz a qualidade para economizar memória
-                    };
-                };
-                reader.readAsDataURL(foto);
-            }
-        }
-    </script>
+    ReactDOM.render(<ImageUpload />, document.getElementById('root'));
+  </script>
 </body>
 </html>
