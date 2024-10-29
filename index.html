@@ -10,6 +10,10 @@
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
   <!-- CDN da biblioteca jsQR -->
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <!-- CDN da biblioteca QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- CDN da biblioteca jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
   <!-- Importando o arquivo de CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
@@ -19,6 +23,7 @@
   <script type="text/babel">
     const ImageUpload = () => {
       const [selectedImages, setSelectedImages] = React.useState([]);
+      const [qrCodeText, setQrCodeText] = React.useState(null);
 
       const handleImageUpload = async (event) => {
         const files = Array.from(event.target.files);
@@ -34,7 +39,6 @@
         setSelectedImages(prevImages => [...prevImages, ...newImages]);
       };
 
-      // Função para converter o arquivo de imagem em dados de imagem
       const readImageFile = (file) => {
         return new Promise((resolve) => {
           const reader = new FileReader();
@@ -54,7 +58,6 @@
         });
       };
 
-      // Função para decodificar o QR code usando jsQR
       const decodeQRCode = (imageData) => {
         const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
         return qrCode ? qrCode.data : null;
@@ -64,21 +67,89 @@
         setSelectedImages(prevImages => prevImages.filter(image => image.id !== id));
       };
 
+      const handleGenerateQRCode = () => {
+        const combinedText = selectedImages.map(image => image.qrCodeText).join(', ');
+        setQrCodeText(combinedText);
+
+        // Criar um elemento temporário para o QR code invisível
+        const tempDiv = document.createElement('div');
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.visibility = 'hidden';
+        document.body.appendChild(tempDiv);
+
+        // Gerar o QR code invisível
+        const qrCode = new QRCode(tempDiv, {
+          text: combinedText,
+          width: 200,
+          height: 200
+        });
+
+        // Esperar até o QR code ser gerado e então fazer download
+        setTimeout(() => {
+          const qrCanvas = tempDiv.querySelector('canvas');
+          if (qrCanvas) {
+            const link = document.createElement('a');
+            link.href = qrCanvas.toDataURL('image/png');
+            link.download = 'QRCode_Combined.png';
+            link.click();
+          }
+          document.body.removeChild(tempDiv); // Remover o elemento temporário
+        }, 500); // Pequeno atraso para garantir que o QR code foi renderizado
+      };
+
+      const handleDownloadPDF = () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.text('QR Codes com Textos', 10, 10);
+        let yPosition = 20; // Início da posição vertical
+        const itemHeight = 40; // Altura de cada item (imagem + texto) no PDF
+
+        selectedImages.forEach((image, index) => {
+          // Adicionar nova página se necessário
+          if (yPosition > 270) { // Quando a posição ultrapassa o limite da página
+            doc.addPage();
+            yPosition = 20; // Reiniciar posição vertical na nova página
+          }
+
+          // Adicionar imagem do QR code
+          const img = new Image();
+          img.src = image.id;
+          doc.addImage(img, 'PNG', 10, yPosition, 20, 20); // Adicionar imagem na posição atual
+          doc.text(image.qrCodeText, 35, yPosition + 10); // Adicionar texto ao lado da imagem
+
+          yPosition += itemHeight; // Atualizar posição vertical para o próximo item
+        });
+
+        doc.save('QR_Codes.pdf');
+      };
+
       return (
         <div className="container">
           <h2>Upload de QR Code</h2>
           <input type="file" accept="image/*" multiple onChange={handleImageUpload} />
-          <div className="image-preview-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+          <div className="image-preview-container">
             {selectedImages.map((image) => (
-              <div key={image.id} style={{ display: 'flex', alignItems: 'center', border: '1px solid #ccc', padding: '10px', borderRadius: '10px' }}>
-                <img src={image.id} alt="Preview" style={{ width: '200px', height: '200px', borderRadius: '10px' }} />
-                <div style={{ marginLeft: '20px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <div key={image.id} className="image-preview">
+                <img src={image.id} alt="Preview" />
+                <div>
                   <p>{image.qrCodeText}</p>
-                  <button onClick={() => handleRemoveImage(image.id)} style={{ marginTop: '10px' }}>Remover</button>
+                  <button onClick={() => handleRemoveImage(image.id)}>Remover</button>
                 </div>
               </div>
             ))}
           </div>
+          {/* Botões adicionais, que aparecem apenas quando há imagens */}
+          {selectedImages.length > 0 && (
+            <div className="action-buttons">
+              <button onClick={handleGenerateQRCode}>QRCode</button>
+              <button onClick={handleDownloadPDF}>Download PDF</button>
+            </div>
+          )}
+          {/* Container para exibir o QR Code gerado */}
+          {qrCodeText && (
+            <div id="qrCodeContainer" style={{ marginTop: '20px' }}></div>
+          )}
         </div>
       );
     };

@@ -8,12 +8,13 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Roboto', sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f9f9f9;
+  background-color: #f3f4f6;
+  color: #333;
 }
 
 .container {
@@ -21,11 +22,15 @@ body {
   max-width: 600px;
   margin: auto;
   text-align: center;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
-  font-size: 1.5em;
-  margin-bottom: 15px;
+  font-size: 1.8em;
+  margin-bottom: 1em;
   color: #333;
 }
 
@@ -33,18 +38,27 @@ h2 {
 input[type="file"] {
   display: block;
   width: 100%;
-  margin: 15px 0;
-  padding: 10px;
+  padding: 12px;
   font-size: 1em;
   color: #555;
+  background-color: #e0e7ff;
+  border: 2px solid #6366f1;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+input[type="file"]:hover {
+  background-color: #c7d2fe;
+  border-color: #4f46e5;
 }
 
 /* Estilo para o container das pré-visualizações das imagens */
 .image-preview-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
+  margin-top: 20px;
 }
 
 /* Estilo para cada pré-visualização individual */
@@ -52,17 +66,19 @@ input[type="file"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px;
-  background-color: #fff;
+  padding: 15px;
+  background-color: #f9fafb;
   border-radius: 10px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Estilo da imagem */
 .image-preview img {
-  width: 120px;
-  height: 120px;
-  border-radius: 10px;
+  width: 30%;
+  max-width: 120px;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
 }
 
 /* Container para o texto do QR e botão de remover */
@@ -70,23 +86,24 @@ input[type="file"] {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-left: 20px;
+  width: 65%;
+  padding-left: 15px;
 }
 
 /* Texto do QR Code */
 .image-preview p {
-  font-size: 0.9em;
-  color: #666;
+  font-size: 0.95em;
+  color: #4b5563;
   margin: 0;
 }
 
 /* Botão de remover */
 .image-preview button {
-  margin-top: 10px;
-  padding: 8px 12px;
+  margin-top: 8px;
+  padding: 8px 15px;
   font-size: 0.9em;
   color: #fff;
-  background-color: #d9534f;
+  background-color: #ef4444;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -94,26 +111,57 @@ input[type="file"] {
 }
 
 .image-preview button:hover {
-  background-color: #c9302c;
+  background-color: #dc2626;
+}
+
+/* Botões de Ação */
+.action-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.action-buttons button {
+  width: 45%;
+  padding: 10px;
+  font-size: 1em;
+  color: #fff;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.action-buttons button:hover {
+  background-color: #2563eb;
+}
+
+.action-buttons button:nth-child(2) {
+  background-color: #10b981;
+}
+
+.action-buttons button:nth-child(2):hover {
+  background-color: #059669;
 }
 
 /* Responsividade para telas médias */
 @media (min-width: 600px) {
   .container {
-    width: 80%;
+    width: 85%;
+    padding: 30px;
   }
 
-  .image-preview {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .image-preview img {
-    width: 150px;
-    height: 150px;
+  .image-preview-container {
+    gap: 20px;
   }
 
   input[type="file"] {
+    font-size: 1.1em;
+    padding: 14px;
+  }
+
+  .action-buttons button {
     font-size: 1.1em;
   }
 }
